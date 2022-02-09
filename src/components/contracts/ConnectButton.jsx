@@ -21,8 +21,6 @@ export default function ConnectButton(props) {
           })
           .catch((err) => {
             if (err.code === 4902) {
-              console.log("Rede não adicionada ainda");
-
               //Adiciona a nova rede a metamask
               ethereum
                 .request({
@@ -37,15 +35,8 @@ export default function ConnectButton(props) {
             }
           });
       })
-      .then(() => {
-        //Seta o objeto web3
-        let w3 = new props.web3(ethereum);
-        props.setStates(1, w3);
-      })
       .catch((err) => {
-        if (err.code == 4001) {
-          console.log("Rejected by user!");
-        } else {
+        if (err.code != 4001) {
           window.location.reload();
         }
       });
@@ -56,14 +47,6 @@ export default function ConnectButton(props) {
     switch (buttonActionId) {
       case 0:
         connectMetamask();
-        break;
-
-      case 1:
-        console.log("Já Conectado!");
-        break;
-
-      case 2:
-        console.log("Instale a MetaMask!");
         break;
 
       default:
@@ -87,5 +70,6 @@ export default function ConnectButton(props) {
     }
   }, [props.address]);
 
+  //Montagem do componente
   return <button onClick={() => buttonAction()}>{buttonText}</button>;
 }

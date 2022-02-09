@@ -2,7 +2,13 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { useEffect, useState } from "react";
+
+//Componentes
 import ConnectButton from "../components/Contracts/ConnectButton";
+import MintButton from "../components/Contracts/MintButton";
+
+//Importa o ABI do contrato
+import { contractABI } from "../components/contracts/contractABI.js";
 
 export default function Home() {
   //Declara o objeto web3, o endereço da conta e o Contrato
@@ -10,16 +16,15 @@ export default function Home() {
   const [address, setAddress] = useState([]);
   const [contract, setContract] = useState([]);
 
+  //Handler para setters de estados
   function setStates(stateId, state) {
     switch (stateId) {
       case 1:
         setWeb3(state);
-        console.log("Set web3!");
         break;
 
       case 2:
         setAddress(state);
-        console.log("Set Address: " + address);
         break;
 
       case 3:
@@ -54,11 +59,7 @@ export default function Home() {
 
   //Atualiza o endereço da conta ativa a cada renderização
   useEffect(() => {
-    try {
-      setAddress(ethereum.selectedAddress);
-    } catch (err) {
-      console.log(err);
-    }
+    setAddress(ethereum.selectedAddress);
   }, []);
 
   //Setta eventos sempre que a pagina renderizar
@@ -77,18 +78,20 @@ export default function Home() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   try {
-  //     //Seta o contrato
-  //     let c = new web3.eth.Contract(contractAbi, contractAddress);
-  //     setContract(c);
+  useEffect(() => {
+    //Seta o objeto web3
+    let w3 = new Web3(ethereum);
+    setWeb3(w3);
+  }, [Web3, address]);
 
-  //     console.log(address);
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }, [web3, contract, address]);
+  useEffect(() => {
+    if (web3.eth) {
+      let c = new web3.eth.Contract(contractABI, contractAddress);
+      setContract(c);
+    }
+  }, [web3.eth]);
 
+  //Montagem do Componente
   return (
     <div className={styles.container}>
       <Head>
@@ -105,11 +108,16 @@ export default function Home() {
           setStates={setStates}
           chainParams={params}
           web3={Web3}
-          contractInfo={contractAddress}
           address={address}
         />
 
         <h1>{address}</h1>
+        <MintButton
+          chainParams={params}
+          address={address}
+          contract={contract}
+          web3={web3}
+        />
       </main>
 
       <footer className={styles.footer}>
