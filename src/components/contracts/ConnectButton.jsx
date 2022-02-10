@@ -17,7 +17,7 @@ export default function ConnectButton(props) {
         ethereum
           .request({
             method: "wallet_switchEthereumChain",
-            params: [{ chainId: props.chainParams.chainId }],
+            params: [{ chainId: props.chainParams[0].chainId }],
           })
           .catch((err) => {
             if (err.code === 4902) {

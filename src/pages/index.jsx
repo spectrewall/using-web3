@@ -40,26 +40,27 @@ export default function Home() {
   const Web3 = require("web3");
 
   //Declara o endereço do contrato que é providenciado assim que é dado o deploy nele
-  const contractAddress = "0x3F96Ac6Ce8C6684E7Da37Ab8760FB095fA1A6c5A";
+  const contractAddress = "0xF6c8d6B572DbBe45793A7Df12BD5004aF0edf1d7";
 
   //Parametros da rede - Caso seja Ethereum Mainnet apenas "chainId"
   const params = [
     {
-      chainId: "0x13881",
-      chainName: "Polygon Testnet",
+      chainId: "0x539",
+      chainName: "Local Ganache",
       nativeCurrency: {
-        name: "MATIC",
-        symbol: "MATIC",
+        name: "ETHER",
+        symbol: "ETH",
         decimals: 18,
       },
-      rpcUrls: ["https://rpc-mumbai.maticvigil.com/"],
-      blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
+      rpcUrls: ["http://127.0.0.1:7545"],
     },
   ];
 
   //Atualiza o endereço da conta ativa a cada renderização
   useEffect(() => {
-    setAddress(ethereum.selectedAddress);
+    if (window.ethereum && ethereum.isMetaMask) {
+      setAddress(ethereum.selectedAddress);
+    }
   }, []);
 
   //Setta eventos sempre que a pagina renderizar
@@ -79,9 +80,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    //Seta o objeto web3
-    let w3 = new Web3(ethereum);
-    setWeb3(w3);
+    if (window.ethereum && ethereum.isMetaMask) {
+      //Seta o objeto web3
+      let w3 = new Web3(ethereum);
+      setWeb3(w3);
+    }
   }, [Web3, address]);
 
   useEffect(() => {

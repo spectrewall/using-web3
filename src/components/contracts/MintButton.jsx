@@ -14,48 +14,53 @@ export default function MintButton(props) {
 
   //Chama a função de mint
   function mintNft() {
-    //Cria nome para o NFT
-    const nameConfig = {
-      dictionaries: [names, adjectives, animals],
-      length: 3,
-    };
+    //seta a Chain
+    console.log(props.chainParams);
 
-    setNftName(uniqueNamesGenerator(nameConfig));
-
-    //Gera DNA para o NFT
-    let dna = Math.floor(Math.random() * (10 - 1 + 1)) + 1;
-
-    //Gera o ABI com os parametros do método
-    let data = props.contract.methods
-      .createBadborn(props.address, nftName, dna)
-      .encodeABI();
-
-    //Pega o preço do gas na rede mumbai
-    fetch("https://gasstation-mumbai.matic.today/v2")
-      .then((response) => response.json())
-      .then((json) => {
-        let gasPrice = json.fast.maxFee.toString();
-
-        let params = [
-          {
-            nonce: "0x00",
-            gas: "2100000",
-            gasPrice: gasPrice,
-            from: props.address,
-            to: props.contractAddress,
-            chainId: props.chainParams.chainId,
-            data: data,
-          },
-        ];
-
-        ethereum
-          .request({ method: "eth_sendTransaction", params: params })
-          .then((hash) => {
-            console.log(hash);
-          });
+    ethereum
+      .request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: props.chainParams[0].chainId }],
       })
       .catch((err) => {
-        console.log(err);
+        if (err.code === 4902) {
+          //Adiciona a nova rede a metamask
+          ethereum
+            .request({
+              method: "wallet_addEthereumChain",
+              params: props.chainParams,
+            })
+            .catch((err) => {
+              window.location.reload();
+            });
+        } else {
+          window.location.reload();
+        }
+      })
+      .then(() => {
+        //Cria nome para o NFT
+        const nameConfig = {
+          dictionaries: [names, adjectives, animals],
+          length: 3,
+        };
+
+        setNftName(uniqueNamesGenerator(nameConfig));
+
+        //Gera DNA para o NFT
+        let dna = Math.floor(Math.random() * (10 - 1 + 1)) + 1;
+
+        //Envia a requisição
+        props.contract.methods
+          .createBadborn(props.address, nftName, dna)
+          .send({
+            from: props.address,
+          })
+          .then(function (receipt) {
+            console.log(receipt);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
       });
   }
 
