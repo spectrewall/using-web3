@@ -8,14 +8,12 @@ import {
 } from "unique-names-generator";
 
 export default function MintButton(props) {
-  const [nftName, setNftName] = useState([]);
   const [result, setResult] = useState([]);
   const [buttonActionId, setButtonActionId] = useState([]);
 
   //Chama a função de mint
   function mintNft() {
     //seta a Chain
-    console.log(props.chainParams);
 
     ethereum
       .request({
@@ -44,19 +42,24 @@ export default function MintButton(props) {
           length: 3,
         };
 
-        setNftName(uniqueNamesGenerator(nameConfig));
+        const name = uniqueNamesGenerator(nameConfig);
 
         //Gera DNA para o NFT
-        let dna = Math.floor(Math.random() * (10 - 1 + 1)) + 1;
+        const dna = Math.floor(Math.random() * (10 - 1 + 1)) + 1;
 
         //Envia a requisição
         props.contract.methods
-          .createBadborn(props.address, nftName, dna)
+          .createBadborn(props.address, name, dna)
           .send({
             from: props.address,
           })
           .then(function (receipt) {
-            console.log(receipt);
+            props.checkNFT(
+              props.chainParams,
+              props.address,
+              props.contract,
+              props.setStates
+            );
           })
           .catch((err) => {
             console.log(err);

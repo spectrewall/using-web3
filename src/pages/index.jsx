@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 //Componentes
 import ConnectButton from "../components/Contracts/ConnectButton";
 import MintButton from "../components/Contracts/MintButton";
+import CheckNFTs from "../components/contracts/CheckNFTs";
+
+//Utils
+import { checkNFT } from "../components/contracts/utils";
 
 //Importa o ABI do contrato
 import { contractABI } from "../components/contracts/contractABI.js";
@@ -15,6 +19,9 @@ export default function Home() {
   const [web3, setWeb3] = useState([]);
   const [address, setAddress] = useState([]);
   const [contract, setContract] = useState([]);
+
+  //Variavel de estado para guardar os dados de todos os NFT's do usuário
+  const [usersNfts, setUsersNfts] = useState([]);
 
   //Handler para setters de estados
   function setStates(stateId, state) {
@@ -29,6 +36,10 @@ export default function Home() {
 
       case 3:
         setContract(state);
+        break;
+
+      case 4:
+        setUsersNfts(state);
         break;
 
       default:
@@ -56,17 +67,14 @@ export default function Home() {
     },
   ];
 
-  //Atualiza o endereço da conta ativa a cada renderização
-  useEffect(() => {
-    if (window.ethereum && ethereum.isMetaMask) {
-      setAddress(ethereum.selectedAddress);
-    }
-  }, []);
-
-  //Setta eventos sempre que a pagina renderizar
+  //Executa a cada renderização
   useEffect(() => {
     //Caso a metamask esteja settada
     if (window.ethereum && ethereum.isMetaMask) {
+      //Atualiza o endereço quando a pagina recarrega
+      setAddress(ethereum.selectedAddress);
+
+      //Eventos
       //Atualiza o endereço das contas quando são trocadas
       ethereum.on("accountsChanged", (accounts) => {
         setAddress(accounts[0]);
@@ -79,17 +87,20 @@ export default function Home() {
     }
   }, []);
 
+  //Executa a cada Reload e a cada vez que o endereço da conta mudar
   useEffect(() => {
     if (window.ethereum && ethereum.isMetaMask) {
-      //Seta o objeto web3
-      let w3 = new Web3(ethereum);
+      //Instancia o objeto web3 de acordo com a instancia da ethereum injetada pela metamask
+      const w3 = new Web3(ethereum);
       setWeb3(w3);
     }
   }, [Web3, address]);
 
+  //Executa a cada reload e a cada vez que o objeto web3.eth mudar
   useEffect(() => {
     if (web3.eth) {
-      let c = new web3.eth.Contract(contractABI, contractAddress);
+      //Instancia o contrato de acordo com o ABI e o Endereço fornecido
+      const c = new web3.eth.Contract(contractABI, contractAddress);
       setContract(c);
     }
   }, [web3.eth]);
@@ -110,16 +121,24 @@ export default function Home() {
         <ConnectButton
           setStates={setStates}
           chainParams={params}
-          web3={Web3}
           address={address}
         />
 
-        <h1>{address}</h1>
         <MintButton
+          setStates={setStates}
           chainParams={params}
           address={address}
           contract={contract}
-          web3={web3}
+          checkNFT={checkNFT}
+        />
+
+        <CheckNFTs
+          setStates={setStates}
+          chainParams={params}
+          address={address}
+          contract={contract}
+          nfts={usersNfts}
+          checkNFT={checkNFT}
         />
       </main>
 
